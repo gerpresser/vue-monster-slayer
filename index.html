@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Monster Slayer</title>
+    <script src="https://npmcdn.com/vue/dist/vue.js"></script>
+    <link rel="stylesheet" href="css/foundation.min.css">
+    <link rel="stylesheet" href="css/app.css">
+</head>
+<body>
+<div id="app">
+    <section class="row">
+        <div class="small-6 columns">
+            <h1 class="text-center">YOU</h1>
+            <div class="healthbar">
+                <div class="healthbar text-center" :style="{backgroundColor: 'green', margin: '0', color: 'white', width: this.vidaJogador + '%',}">
+                    {{ vidaJogador }}
+                </div>
+            </div>
+        </div>
+        <div class="small-6 columns">
+            <h1 class="text-center">MONSTER</h1>
+            <div class="healthbar">
+                <div class="healthbar text-center" :style="{backgroundColor: 'green', margin: '0', color: 'white', width: this.vidaMonstro + '%',}">
+                    {{ vidaMonstro }}
+                </div>
+            </div>
+        </div>
+    </section>
+    <section class="row controls" v-if="!jogoComecou">
+        <div class="small-12 columns">
+            <button id="start-game" @click="comecarNovoJogo">START NEW GAME</button>
+        </div>
+    </section>
+    <section class="row controls" v-if="jogoComecou">
+        <div class="small-12 columns">
+            <button id="attack" @click="atacar('jogador')">ATTACK</button>
+            <button id="special-attack" @click="atacarEspecial">SPECIAL ATTACK</button>
+            <button id="heal" @click="curar">HEAL</button>
+            <button id="give-up" @click="desistir">GIVE UP</button>
+        </div>
+    </section>
+    <section class="row log" v-if="logDano.length > 1">
+        <div class="small-12 columns">
+            <ul>
+                <li v-for="(dano, index) in logDano" :class="{'player-turn': index % 2 != 0, 'monster-turn': index % 2 == 0}">
+                    {{ dano }}
+                </li>
+            </ul>
+        </div>
+    </section>
+</div>
+
+<script>
+    new Vue({
+        el: '#app',
+        data() {
+            return {
+                vidaJogador: 100,
+                vidaMonstro: 100,
+                danoMonstro: 0,
+                danoJogador: 0,
+                jogoComecou: false,
+                logDano: []
+            }
+        },
+        methods: {
+            comecarNovoJogo: function () {
+                this.logDano = [];
+                this.jogoComecou = true;
+                this.vidaJogador = 100;
+                this.vidaMonstro = 100;
+            },
+            atacar: function (player) {
+                if (player == 'jogador') {
+                    this.danoJogador = Math.floor(Math.random() * (10 - 1 + 1));
+                    this.danoMonstro = Math.floor(Math.random() * (10 - 1 + 1));
+                    
+                    this.logDano.push('O monstro causou ' + this.danoMonstro + ' de dano');
+                    this.logDano.push('Você causou ' + this.danoJogador + ' de dano');
+
+                    this.vidaMonstro = this.vidaMonstro - this.danoJogador;
+                    this.vidaJogador = this.vidaJogador - this.danoMonstro;
+                }
+                else {
+                    this.danoMonstro = Math.floor(Math.random() * (10 - 1 + 1));
+                    this.logDano.push('O monstro causou ' + this.danoMonstro + ' de dano');
+                    this.vidaJogador = this.vidaJogador - this.danoMonstro;
+                }
+                
+                this.vidaMonstro <= 0 ? this.vidaMonstro = '0' : this.vidaMonstro = this.vidaMonstro;
+                this.vidaJogador <= 0 ? this.vidaJogador = '0' : this.vidaJogador = this.vidaJogador;
+
+                if (this.vidaMonstro <= 0 || this.vidaJogador <= 0) {
+                    this.jogoComecou = false;
+                }
+            },
+            atacarEspecial: function () {
+                this.danoJogador = Math.floor(Math.random() * (20 - 2 + 1));
+                this.danoMonstro = Math.floor(Math.random() * (10 - 2 + 1));
+                
+                this.logDano.push('O monstro causou ' + this.danoMonstro + ' de dano');
+                this.logDano.push('Você causou ' + this.danoJogador + ' de dano');
+
+                this.vidaMonstro = this.vidaMonstro - this.danoJogador;
+                this.vidaJogador = this.vidaJogador - this.danoMonstro;
+
+                this.vidaMonstro <= 0 ? this.vidaMonstro = '0' : this.vidaMonstro = this.vidaMonstro;
+                this.vidaJogador <= 0 ? this.vidaJogador = '0' : this.vidaJogador = this.vidaJogador;
+
+                if (this.vidaMonstro <= 0 || this.vidaJogador <= 0) {
+                    this.jogoComecou = false;
+                }
+            },
+            curar: function () {
+                this.vidaJogador = this.vidaJogador + Math.floor(Math.random() * (10 - 1 + 1)) + 1;
+                this.atacar();
+                this.vidaJogador >= 100 ? this.vidaJogador = '100' : this.vidaJogador = this.vidaJogador;
+            },
+            desistir: function() {
+                this.jogoComecou = false;
+            }
+        },
+        watch: {
+            vidaJogador: function () {
+                this.vidaJogador == 0 ? alert('O monstro ganhou') : '';
+            },
+            vidaMonstro: function() {
+                this.vidaMonstro == 0 ? alert('Você ganhou') : '';
+            }
+        }
+    })
+</script>
+
+</body>
+</html>
